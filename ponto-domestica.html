@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Ponto</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --cream: #F5F0E8;
+    --dark: #1A1A1A;
+    --warm: #C8864A;
+    --warm-light: #E8A870;
+    --warm-pale: #F5E6D3;
+    --green: #3D7A5E;
+    --green-light: #E8F3EE;
+    --red: #C04A3A;
+    --red-light: #FAE8E6;
+    --gray: #8A8070;
+    --line: #E0D8CC;
+    --shadow: rgba(26,26,26,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--dark);
+    color: var(--cream);
+    padding: 24px 20px 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+  }
+  header p {
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+
+  /* NAV TABS */
+  .tabs {
+    display: flex;
+    background: var(--dark);
+    padding: 0 16px 16px;
+    gap: 8px;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5);
+    transition: all 0.2s;
+    letter-spacing: 0.2px;
+  }
+  .tab.active {
+    background: var(--warm);
+    color: #fff;
+  }
+
+  /* PAGES */
+  .page { display: none; padding: 20px 16px; }
+  .page.active { display: block; }
+
+  /* CLOCK CARD */
+  .clock-card {
+    background: var(--dark);
+    border-radius: 20px;
+    padding: 28px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .clock-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,134,74,0.18), transparent 70%);
+  }
+  .live-time {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    color: var(--cream);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .live-date {
+    font-size: 13px;
+    color: var(--gray);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* STATUS BADGE */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+  .status-badge.in { background: var(--green-light); color: var(--green); }
+  .status-badge.out { background: var(--red-light); color: var(--red); }
+  .status-badge.none { background: rgba(255,255,255,0.08); color: var(--gray); }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* SECTION TITLES */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 12px;
+    padding-left: 2px;
+  }
+
+  /* ACTION BUTTONS */
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .action-btn {
+    padding: 18px 12px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .action-btn:active { transform: scale(0.97); }
+  .action-btn .icon { font-size: 24px; }
+  .action-btn.entrada {
+    background: var(--green);
+    color: white;
+    grid-column: 1 / -1;
+    padding: 22px;
+    font-size: 16px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+  }
+  .action-btn.saida {
+    background: var(--red);
+    color: white;
+    grid-column: 1 / -1;
+    padding: 22px;
+    font-size: 16px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+  }
+  .action-btn.secondary {
+    background: var(--warm-pale);
+    color: var(--warm);
+    border: 1.5px solid var(--warm-light);
+  }
+  .action-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* NFC AREA */
+  @keyframes nfcPulse {
+    0%   { transform: scale(1);   opacity: 0.7; }
+    100% { transform: scale(2.4); opacity: 0;   }
+  }
+  .nfc-area {
+    background: white;
+    border-radius: 16px;
+    border: 2px dashed var(--line);
+    padding: 20px 16px 16px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .nfc-state { display: none; }
+  .nfc-state.active { display: block; }
+  .nfc-icon-static { font-size: 46px; margin-bottom: 10px; }
+  .nfc-info {
+    font-size: 13px;
+    color: var(--dark);
+    font-weight: 500;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .nfc-sub { font-size: 11px; color: var(--gray); margin-bottom: 14px; }
+  .nfc-err { color: var(--red); font-size: 12px; line-height: 1.6; }
+  .nfc-notice {
+    background: var(--warm-pale);
+    color: var(--warm);
+    font-size: 12px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    text-align: left;
+    line-height: 1.5;
+  }
+  .nfc-link {
+    display: block;
+    background: none;
+    border: none;
+    color: var(--gray);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-top: 12px;
+    padding: 4px;
+  }
+  /* Pulsing rings */
+  .nfc-pulse-wrap {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 16px;
+  }
+  .nfc-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--warm);
+    animation: nfcPulse 2s ease-out infinite;
+  }
+  .nfc-ring.ok { border-color: var(--green); }
+  .nfc-center {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--warm-pale);
+    border: 3px solid var(--warm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+  }
+  .nfc-center.ok { background: var(--green-light); border-color: var(--green); }
+  /* Badge no histórico */
+  .record-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 100px;
+    flex-shrink: 0;
+  }
+  .record-badge.nfc    { background: var(--warm-pale);   color: var(--warm);  }
+  .record-badge.manual { background: var(--green-light); color: var(--green); }
+  /* Botão NFC ativar */
+  .nfc-activate-btn {
+    background: var(--warm);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    transition: opacity 0.15s;
+  }
+  .nfc-activate-btn:active { opacity: 0.85; }
+
+  /* ── NFC OVERLAY (tela aberta pelo tag) ──────────────────── */
+  .nfc-ov {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--dark);
+    z-index: 3000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .nfc-ov.show { display: flex; }
+  .nfc-ov-logo {
+    font-size: 13px;
+    color: var(--gray);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .nfc-ov-clock {
+    font-family: 'DM Serif Display', serif;
+    font-size: 58px;
+    color: var(--cream);
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .nfc-ov-date {
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 28px;
+  }
+  .nfc-ov-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 300px;
+  }
+  .nfc-ov-card .lbl {
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .nfc-ov-card .big {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    color: var(--cream);
+    margin-bottom: 4px;
+  }
+  .nfc-ov-card .sub {
+    font-size: 13px;
+    color: var(--warm-light);
+    margin-top: 4px;
+  }
+  .nfc-ov-btn {
+    width: 100%;
+    max-width: 300px;
+    padding: 20px;
+    border: none;
+    border-radius: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    transition: opacity 0.15s;
+  }
+  .nfc-ov-btn:active { opacity: 0.82; }
+  .nfc-ov-btn.ent { background: var(--green); color: #fff; }
+  .nfc-ov-btn.sai { background: var(--red);   color: #fff; }
+  .nfc-ov-rows {
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 24px;
+  }
+  .nfc-ov-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .nfc-ov-row:last-child { border-bottom: none; }
+  .nfc-ov-row .k { font-size: 12px; color: var(--gray); }
+  .nfc-ov-row .v { font-size: 15px; color: var(--cream); font-weight: 500; }
+  .nfc-ov-row .v.hl { color: var(--warm-light); font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .nfc-ov-link {
+    background: none; border: none;
+    color: var(--gray); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 8px;
+  }
+
+  /* TODAY SUMMARY */
+  .today-summary {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .today-stat {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+  }
+  .today-stat .val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+  .today-stat .lbl {
+    font-size: 10px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 500;
+  }
+  .divider-v {
+    width: 1px;
+    background: var(--line);
+    margin: 4px 0;
+  }
+
+  /* RECORDS LIST */
+  .records-list { display: flex; flex-direction: column; gap: 10px; }
+  .record-card {
+    background: white;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .record-type-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-entrada { background: var(--green); }
+  .dot-saida { background: var(--red); }
+  .record-info { flex: 1; }
+  .record-date { font-size: 13px; font-weight: 600; color: var(--dark); }
+  .record-sub { font-size: 12px; color: var(--gray); margin-top: 1px; }
+  .record-time {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--dark);
+  }
+  .record-thumb {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  /* MONTH SELECTOR */
+  .month-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .month-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--warm);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+  .month-btn:active { background: var(--warm-pale); }
+  .month-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    text-transform: capitalize;
+  }
+
+  /* REPORT */
+  .report-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .report-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .report-card.full { grid-column: 1 / -1; }
+  .report-card .big {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    margin-bottom: 4px;
+    color: var(--dark);
+  }
+  .report-card .big.extra { color: var(--warm); }
+  .report-card .big.neg { color: var(--red); }
+  .report-card .small {
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 500;
+  }
+
+  /* DAILY BREAKDOWN */
+  .daily-row {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+  .daily-row .day-label {
+    font-weight: 600;
+    font-size: 13px;
+    width: 34px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .daily-row .day-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+    color: var(--gray);
+  }
+  .daily-row .times {
+    flex: 1;
+    font-size: 12px;
+    color: var(--gray);
+  }
+  .daily-row .hours {
+    font-weight: 600;
+    font-size: 13px;
+    text-align: right;
+  }
+  .hours.normal { color: var(--green); }
+  .hours.extra { color: var(--warm); }
+  .hours.short { color: var(--red); }
+  .hours.absent { color: var(--gray); }
+  .daily-row .bar-wrap {
+    width: 50px;
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .daily-row .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    transition: width 0.4s;
+  }
+
+  /* EXPORT BTN */
+  .export-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--dark);
+    color: var(--cream);
+    border: none;
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: opacity 0.15s;
+  }
+  .export-btn:active { opacity: 0.85; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .modal img { width: 100%; border-radius: 12px; }
+  .modal-close {
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--dark);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 88px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--dark);
+    color: var(--cream);
+    padding: 12px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 500;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray);
+    font-size: 14px;
+  }
+  .empty-state .ei { font-size: 40px; margin-bottom: 10px; }
+
+  hr.section-sep {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 20px 0;
+  }
+
+  .chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .chip.sab { background: var(--warm-pale); color: var(--warm); }
+  .chip.fol { background: var(--line); color: var(--gray); }
+
+  /* PIN MODAL */
+  .pin-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.88);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .pin-overlay.open { display: flex; }
+  .pin-modal {
+    background: var(--dark);
+    border-radius: 24px;
+    padding: 32px 24px 24px;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .pin-modal .lock-icon { font-size: 36px; margin-bottom: 14px; }
+  .pin-modal h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+  .pin-modal p {
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .pin-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .pin-dot.filled { background: var(--warm); border-color: var(--warm); }
+  .pin-dot.error  { background: var(--red);  border-color: var(--red); animation: shake 0.35s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .pin-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .pin-key {
+    background: rgba(255,255,255,0.07);
+    border: none;
+    border-radius: 14px;
+    padding: 18px 0;
+    color: var(--cream);
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .pin-key:active { background: rgba(200,134,74,0.3); }
+  .pin-key.del { font-family: 'DM Sans', sans-serif; font-size: 18px; color: var(--gray); }
+  .pin-key.empty { background: none; cursor: default; pointer-events: none; }
+  .pin-cancel {
+    background: none; border: none;
+    color: var(--gray); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; cursor: pointer; padding: 8px;
+    text-decoration: underline;
+  }
+  .pin-error-msg { font-size: 12px; color: var(--red); margin-bottom: 8px; min-height: 18px; }
+  /* SETTINGS */
+  .settings-card {
+    background: white; border-radius: 16px;
+    padding: 20px; margin-bottom: 12px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .settings-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .settings-card .s-desc { font-size: 12px; color: var(--gray); margin-bottom: 16px; line-height: 1.5; }
+  .pin-input-row { display: flex; gap: 8px; align-items: center; }
+  .pin-text-input {
+    flex: 1; padding: 12px 14px;
+    border: 1.5px solid var(--line); border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 22px;
+    letter-spacing: 10px; text-align: center;
+    background: var(--cream); color: var(--dark); outline: none;
+  }
+  .pin-text-input:focus { border-color: var(--warm); }
+  .save-pin-btn {
+    padding: 12px 18px; background: var(--warm); color: white;
+    border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+  }
+  .save-pin-btn:active { opacity: 0.85; }
+  .pin-status { font-size: 12px; margin-top: 10px; color: var(--green); min-height: 18px; }
+
+  /* NAME FIELD */
+  .name-bar {
+    background: rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .name-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream);
+    letter-spacing: 0.2px;
+  }
+  .name-bar input::placeholder { color: rgba(255,255,255,0.3); }
+  .name-bar .name-icon { font-size: 15px; opacity: 0.5; flex-shrink: 0; }
+  .name-bar .name-saved {
+    font-size: 10px;
+    color: var(--warm-light);
+    opacity: 0;
+    transition: opacity 0.4s;
+    flex-shrink: 0;
+  }
+  .name-bar .name-saved.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Registro de Ponto</h1>
+  <p>Empregada Doméstica · CLT</p>
+  <div class="name-bar">
+    <span class="name-icon">👤</span>
+    <input type="text" id="employeeName" placeholder="Nome da funcionária..." maxlength="60" oninput="saveName()">
+    <span class="name-saved" id="nameSaved">✓ salvo</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('registrar')">Registrar</button>
+  <button class="tab" onclick="switchTab('historico')">Histórico</button>
+  <button class="tab" onclick="switchTab('relatorio')">🔒 Relatório</button>
+  <button class="tab" onclick="switchTab('configurar')">⚙️</button>
+</div>
+
+<!-- PAGE: REGISTRAR -->
+<div id="page-registrar" class="page active">
+
+  <div class="clock-card">
+    <div class="live-time" id="liveTime">--:--:--</div>
+    <div class="live-date" id="liveDate">---</div>
+    <div id="statusBadge" class="status-badge none">
+      <span class="status-dot"></span>
+      <span id="statusText">Sem registro hoje</span>
+    </div>
+  </div>
+
+  <div class="section-label">Registro via NFC</div>
+  <div class="nfc-area" id="nfcArea">
+
+    <!-- IDLE: aguardando ativação -->
+    <div class="nfc-state active" id="stIdle">
+      <div class="nfc-icon-static">📡</div>
+      <p class="nfc-info">Aproxime o celular ao tag NFC colado na parede para registrar o ponto</p>
+      <p class="nfc-sub" style="margin-bottom:16px;">Tag NTAG213 ou similar</p>
+      <button class="nfc-activate-btn" onclick="activateNFC()">
+        <span>📡</span> Ativar Leitura NFC
+      </button>
+      <button class="nfc-link" onclick="setNFCSt('manual')">Usar botões manuais</button>
+    </div>
+
+    <!-- SCANNING: anéis pulsantes -->
+    <div class="nfc-state" id="stScan">
+      <div class="nfc-pulse-wrap">
+        <div class="nfc-ring" style="animation-delay:0s"></div>
+        <div class="nfc-ring" style="animation-delay:0.65s"></div>
+        <div class="nfc-ring" style="animation-delay:1.3s"></div>
+        <div class="nfc-center" id="nfcCenterIcon">📡</div>
+      </div>
+      <p class="nfc-info" id="nfcScanMsg">Aguardando leitura do tag NFC</p>
+      <p class="nfc-sub" id="nfcScanSub">Aproxime o celular ao tag na parede</p>
+      <button class="nfc-link" onclick="stopNFC()">Cancelar</button>
+    </div>
+
+    <!-- ERRO / SEM SUPORTE -->
+    <div class="nfc-state" id="stErr">
+      <div class="nfc-icon-static">⚠️</div>
+      <p class="nfc-info nfc-err" id="nfcErrTxt"></p>
+      <button class="nfc-activate-btn" onclick="activateNFC()" id="nfcRetryBtn" style="margin-top:12px;">
+        Tentar novamente
+      </button>
+      <button class="nfc-link" onclick="setNFCSt('manual')">Usar botões manuais</button>
+    </div>
+
+    <!-- MANUAL: botões tradicionais -->
+    <div class="nfc-state" id="stManual">
+      <div class="nfc-notice">
+        ⚠️ Modo manual — use quando NFC não estiver disponível (ex: iPhone) ou quando precisar corrigir.
+      </div>
+      <button class="action-btn entrada" id="btnEntrada" onclick="register('entrada','manual')">
+        <span class="icon">🟢</span> Registrar Entrada
+      </button>
+      <div style="height:10px;"></div>
+      <button class="action-btn saida" id="btnSaida" onclick="register('saida','manual')" disabled>
+        <span class="icon">🔴</span> Registrar Saída
+      </button>
+      <button class="nfc-link" onclick="setNFCSt('idle')">← Voltar ao NFC</button>
+    </div>
+
+  </div>
+
+  <hr class="section-sep">
+  <div class="section-label">Resumo de hoje</div>
+  <div class="today-summary" id="todaySummary">
+    <div class="today-stat">
+      <div class="val" id="tEntrada">--:--</div>
+      <div class="lbl">Entrada</div>
+    </div>
+    <div class="divider-v"></div>
+    <div class="today-stat">
+      <div class="val" id="tSaida">--:--</div>
+      <div class="lbl">Saída</div>
+    </div>
+    <div class="divider-v"></div>
+    <div class="today-stat">
+      <div class="val" id="tTotal">--:--</div>
+      <div class="lbl">Total</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PAGE: HISTÓRICO -->
+<div id="page-historico" class="page">
+  <div class="month-selector">
+    <button class="month-btn" onclick="changeHistMonth(-1)">‹</button>
+    <span class="month-name" id="histMonthLabel"></span>
+    <button class="month-btn" onclick="changeHistMonth(1)">›</button>
+  </div>
+  <div id="recordsList" class="records-list"></div>
+</div>
+
+<!-- PAGE: RELATÓRIO -->
+<div id="page-relatorio" class="page">
+  <div class="month-selector">
+    <button class="month-btn" onclick="changeRepMonth(-1)">‹</button>
+    <span class="month-name" id="repMonthLabel"></span>
+    <button class="month-btn" onclick="changeRepMonth(1)">›</button>
+  </div>
+
+  <div class="report-summary" id="reportSummary"></div>
+
+  <div class="section-label">Detalhamento diário</div>
+  <div id="reportDaily"></div>
+
+  <button class="export-btn" onclick="exportReport()">📄 Exportar Relatório em Texto</button>
+</div>
+
+<!-- PAGE: CONFIGURAR -->
+<div id="page-configurar" class="page">
+  <div class="section-label">Segurança</div>
+  <div class="settings-card">
+    <h3>🔐 PIN do Relatório</h3>
+    <div class="s-desc">Defina um PIN de 4 dígitos para proteger o acesso à aba de Relatório. Somente você saberá o PIN.</div>
+    <div class="pin-input-row">
+      <input type="password" id="pinSetInput" class="pin-text-input" maxlength="4" inputmode="numeric" placeholder="····">
+      <button class="save-pin-btn" onclick="savePin()">Salvar</button>
+    </div>
+    <div class="pin-status" id="pinStatus"></div>
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">NFC</div>
+  <div class="settings-card">
+    <h3>📡 Tag NFC</h3>
+    <div class="s-desc" style="line-height:1.8;">
+      <b>Compatível com:</b> Android + Chrome (versão 89+)<br>
+      <b>iPhone:</b> Não suportado — use os botões manuais<br>
+      <b>Tag recomendada:</b> NTAG213 ou NTAG215 (~R$ 3–6 no Mercado Livre)<br>
+      <b>App para gravar:</b> NFC Tools (gratuito, Android/iOS)<br>
+      <b>O que gravar:</b> Não precisa gravar nada — qualquer tag virgem funciona
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">Funcionária</div>
+  <div class="settings-card">
+    <h3>👤 Nome</h3>
+    <div class="s-desc">O nome aparece nos relatórios exportados.</div>
+    <div class="pin-input-row">
+      <input type="text" id="nameSetInput" class="pin-text-input" style="letter-spacing:1px;font-size:15px;" maxlength="60" placeholder="Nome completo">
+      <button class="save-pin-btn" onclick="saveNameFromSettings()">Salvar</button>
+    </div>
+    <div class="pin-status" id="nameSetStatus"></div>
+  </div>
+</div>
+
+<!-- PIN MODAL -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-modal">
+    <div class="lock-icon">🔐</div>
+    <h2>Acesso Restrito</h2>
+    <p>Digite o PIN para ver o relatório mensal</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-error-msg" id="pinErrMsg"></div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key empty"></button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <button class="pin-cancel" onclick="closePinModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL IMAGEM -->
+<div class="modal-overlay" id="imgModal">
+  <div class="modal">
+    <img id="modalImg" src="" alt="Evidência">
+    <div id="modalInfo" style="font-size:12px;color:var(--gray);margin-top:10px;text-align:center;"></div>
+    <button class="modal-close" onclick="closeModal()">Fechar</button>
+  </div>
+</div>
+
+<!-- ══ NFC OVERLAY — aberto pelo tag NFC ═══════════════════════════════ -->
+<div class="nfc-ov" id="nfcOv">
+
+  <div class="nfc-ov-logo">🏠 Registro de Ponto</div>
+
+  <!-- VIEW A: Sem registro — registrar Entrada -->
+  <div id="nfcVwEntrada">
+    <div class="nfc-ov-clock" id="ovClkA">--:--:--</div>
+    <div class="nfc-ov-date"  id="ovDtA">---</div>
+    <div class="nfc-ov-card">
+      <div class="lbl">Hoje</div>
+      <div class="big">Sem registro</div>
+      <div class="sub">Primeiro acesso do dia</div>
+    </div>
+    <button class="nfc-ov-btn ent" onclick="nfcReg('entrada')">
+      🟢 Registrar Entrada
+    </button>
+  </div>
+
+  <!-- VIEW B: Tem entrada — registrar Saída -->
+  <div id="nfcVwSaida" style="display:none">
+    <div class="nfc-ov-clock" id="ovClkB">--:--:--</div>
+    <div class="nfc-ov-date"  id="ovDtB">---</div>
+    <div class="nfc-ov-card">
+      <div class="lbl">Você entrou às</div>
+      <div class="big" id="ovEntHora">--:--</div>
+      <div class="sub" id="ovTempoDecor">Há -- em serviço</div>
+    </div>
+    <button class="nfc-ov-btn sai" onclick="nfcReg('saida')">
+      🔴 Registrar Saída
+    </button>
+  </div>
+
+  <!-- VIEW C: Resultado (após registro) -->
+  <div id="nfcVwResult" style="display:none">
+    <div style="font-size:54px;margin-bottom:10px" id="ovResEmoji">✅</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--cream);margin-bottom:22px" id="ovResTitle">Registrado!</div>
+    <div class="nfc-ov-rows" id="ovResRows"></div>
+  </div>
+
+  <!-- VIEW D: Jornada já completa -->
+  <div id="nfcVwFim" style="display:none">
+    <div style="font-size:54px;margin-bottom:10px">✅</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--cream);margin-bottom:22px">Jornada completa!</div>
+    <div class="nfc-ov-rows" id="ovFimRows"></div>
+  </div>
+
+  <button class="nfc-ov-link" onclick="nfcOvClose()">Ver app completo →</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'ponto_dom_v3';
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+
+let records = loadData();
+// records: [{date:'2025-05-07', type:'entrada'|'saida', time:'08:02', photo: base64|null}]
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const HORA_DIA = 8;         // horas úteis/dia (sem almoço) seg-sex
+const HORA_SAB = 4;         // horas sábado
+const ALMOCO  = 60;         // minutos de almoço (descontados automaticamente)
+// Dia 0=dom,1=seg,...,6=sab
+
+function expectedMinutes(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const dow = d.getDay();
+  if (dow === 0) return 0;                          // domingo – folga
+  if (dow === 6) return HORA_SAB * 60;              // sábado
+  return HORA_DIA * 60;                             // seg-sex
+}
+function isWorkDay(dateStr) { return expectedMinutes(dateStr) > 0; }
+
+// ── LIVE CLOCK ────────────────────────────────────────────────────────────────
+function pad(n) { return String(n).padStart(2,'0'); }
+function todayStr() {
+  const n = new Date();
+  return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`;
+}
+
+function updateClock() {
+  const n = new Date();
+  document.getElementById('liveTime').textContent =
+    `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  const dias = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  document.getElementById('liveDate').textContent =
+    `${dias[n.getDay()]}, ${n.getDate()} ${meses[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── STATE FOR TODAY ───────────────────────────────────────────────────────────
+function todayRecords() {
+  const t = todayStr();
+  return records.filter(r => r.date === t);
+}
+function lastRecord() {
+  const t = todayStr();
+  const tr = records.filter(r => r.date === t);
+  return tr.length ? tr[tr.length - 1] : null;
+}
+
+function refreshUI() {
+  const tr = todayRecords();
+  const entrada = tr.find(r => r.type === 'entrada');
+  const saida   = tr.find(r => r.type === 'saida');
+
+  // Status badge
+  const badge = document.getElementById('statusBadge');
+  const statusText = document.getElementById('statusText');
+  badge.className = 'status-badge';
+  if (saida) { badge.classList.add('out'); statusText.textContent = 'Saída registrada'; }
+  else if (entrada) { badge.classList.add('in'); statusText.textContent = 'Trabalho em andamento'; }
+  else { badge.classList.add('none'); statusText.textContent = 'Sem registro hoje'; }
+
+  // Buttons
+  const canEntrada = !entrada;
+  const canSaida   = entrada && !saida;
+  document.getElementById('btnEntrada').disabled = !canEntrada;
+  document.getElementById('btnSaida').disabled   = !canSaida;
+
+  // Today summary
+  document.getElementById('tEntrada').textContent = entrada ? entrada.time : '--:--';
+  document.getElementById('tSaida').textContent   = saida   ? saida.time   : '--:--';
+
+  if (entrada && saida) {
+    const mins = timeDiffMin(entrada.time, saida.time);
+    const dStr = todayStr();
+    const dow = new Date(dStr + 'T12:00:00').getDay();
+    const effMins = dow !== 6 ? Math.max(0, mins - ALMOCO) : mins;
+    document.getElementById('tTotal').textContent = formatMins(effMins);
+  } else {
+    document.getElementById('tTotal').textContent = '--:--';
+  }
+}
+
+// ── NFC ───────────────────────────────────────────────────────────────────────
+let nfcReader = null;
+let nfcLock   = false;
+let nfcActive = false;
+
+function setNFCSt(st) {
+  document.querySelectorAll('.nfc-state').forEach(el => el.classList.remove('active'));
+  const map = { idle:'stIdle', scan:'stScan', err:'stErr', manual:'stManual' };
+  const target = document.getElementById(map[st]);
+  if (target) target.classList.add('active');
+  nfcActive = (st === 'scan');
+}
+
+function stopNFC() {
+  nfcReader = null;
+  nfcActive = false;
+  setNFCSt('idle');
+}
+
+async function activateNFC() {
+  if (!('NDEFReader' in window)) {
+    document.getElementById('nfcErrTxt').textContent =
+      'NFC não suportado neste dispositivo. Use os botões manuais. (Compatível com Android + Chrome)';
+    document.getElementById('nfcRetryBtn').style.display = 'none';
+    setNFCSt('err');
+    return;
+  }
+  setNFCSt('scan');
+  document.getElementById('nfcScanMsg').textContent = 'Solicitando permissão NFC...';
+  document.getElementById('nfcScanSub').textContent = '';
+  nfcLock = false;
+  try {
+    const reader = new NDEFReader();
+    nfcReader = reader;
+    await reader.scan(); // browser pede permissão aqui
+    reader.addEventListener('reading', onNFCTag);
+    reader.addEventListener('readingerror', () => {
+      if (nfcActive) {
+        document.getElementById('nfcScanMsg').textContent = 'Erro na leitura — aproxime novamente';
+      }
+    });
+    // Mensagem contextual
+    const tr = todayRecords();
+    const hasEnt = tr.some(r => r.type === 'entrada');
+    const hasSai = tr.some(r => r.type === 'saida');
+    if (hasEnt && hasSai) {
+      document.getElementById('nfcScanMsg').textContent = 'Jornada de hoje já completa';
+      document.getElementById('nfcScanSub').textContent = 'Entrada e saída já registradas';
+    } else {
+      const next = hasEnt ? 'saída' : 'entrada';
+      document.getElementById('nfcScanMsg').textContent = `Aguardando leitura — registrar ${next}`;
+      document.getElementById('nfcScanSub').textContent = 'Aproxime o celular ao tag na parede';
+    }
+  } catch(e) {
+    let msg = 'Não foi possível iniciar o NFC. Tente novamente.';
+    const retry = document.getElementById('nfcRetryBtn');
+    if (e.name === 'NotAllowedError') {
+      msg = 'Permissão NFC negada. Acesse Configurações → Apps → Chrome → Permissões e ative NFC.';
+    } else if (e.name === 'NotSupportedError') {
+      msg = 'NFC não suportado neste dispositivo. Use os botões manuais.';
+      if (retry) retry.style.display = 'none';
+    }
+    document.getElementById('nfcErrTxt').textContent = msg;
+    setNFCSt('err');
+  }
+}
+
+function onNFCTag({ serialNumber }) {
+  if (nfcLock || !nfcActive) return;
+  const tr     = todayRecords();
+  const hasEnt = tr.some(r => r.type === 'entrada');
+  const hasSai = tr.some(r => r.type === 'saida');
+  if (hasEnt && hasSai) {
+    showToast('✅ Jornada já completa — nada a registrar');
+    return;
+  }
+  nfcLock = true;
+  const type = hasEnt ? 'saida' : 'entrada';
+  register(type, 'nfc', serialNumber);
+
+  // Feedback visual no scanning state
+  const center = document.getElementById('nfcCenterIcon');
+  const msg    = document.getElementById('nfcScanMsg');
+  const sub    = document.getElementById('nfcScanSub');
+  if (center) center.textContent = '✅';
+  if (msg)    msg.textContent    = type === 'entrada' ? '✅ Entrada registrada!' : '✅ Saída registrada!';
+  if (sub)    sub.textContent    = '';
+
+  setTimeout(() => {
+    if (!nfcActive) return;
+    if (center) center.textContent = '📡';
+    const tr2    = todayRecords();
+    const hasE2  = tr2.some(r => r.type === 'entrada');
+    const hasS2  = tr2.some(r => r.type === 'saida');
+    if (hasE2 && hasS2) {
+      if (msg) msg.textContent = 'Jornada de hoje completa!';
+      if (sub) sub.textContent = 'Entrada e saída registradas';
+    } else {
+      const next2 = hasE2 ? 'saída' : 'entrada';
+      if (msg) msg.textContent = `Aguardando leitura — registrar ${next2}`;
+      if (sub) sub.textContent = 'Aproxime o celular ao tag na parede';
+    }
+    nfcLock = false;
+  }, 2500);
+}
+
+// ── REGISTER ──────────────────────────────────────────────────────────────────
+function register(type, method = 'nfc', serial = null) {
+  const n = new Date();
+  const time = `${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  const record = {
+    date:      todayStr(),
+    type,
+    time,
+    nfc:       method === 'nfc',
+    nfcSerial: serial || null,
+    ts:        Date.now()
+  };
+  records.push(record);
+  saveData(records);
+  refreshUI();
+  showToast(type === 'entrada' ? `✅ Entrada registrada às ${time}` : `✅ Saída registrada às ${time}`);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function timeDiffMin(t1, t2) {
+  const [h1,m1] = t1.split(':').map(Number);
+  const [h2,m2] = t2.split(':').map(Number);
+  return (h2*60+m2) - (h1*60+m1);
+}
+function formatMins(m) {
+  if (m < 0) return `-${pad(Math.floor(-m/60))}:${pad((-m)%60)}`;
+  return `${pad(Math.floor(m/60))}:${pad(m%60)}`;
+}
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DIAS_ABREV = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+let reportUnlocked = false;
+
+function switchTab(name) {
+  if (name === 'relatorio') {
+    if (!reportUnlocked) { openPinModal(); return; }
+  }
+  _activateTab(name);
+}
+
+function _activateTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const tabs = ['registrar','historico','relatorio','configurar'];
+  const idx = tabs.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+  if (name === 'historico') renderHistory();
+  if (name === 'relatorio') renderReport();
+  if (name === 'configurar') initSettingsPage();
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────────
+let histMonth = new Date().getMonth();
+let histYear  = new Date().getFullYear();
+
+function changeHistMonth(d) {
+  histMonth += d;
+  if (histMonth > 11) { histMonth = 0; histYear++; }
+  if (histMonth < 0)  { histMonth = 11; histYear--; }
+  renderHistory();
+}
+
+function renderHistory() {
+  const label = `${MESES[histMonth]} ${histYear}`;
+  document.getElementById('histMonthLabel').textContent = label;
+
+  const prefix = `${histYear}-${pad(histMonth+1)}`;
+  const monthRecs = records.filter(r => r.date.startsWith(prefix));
+  const container = document.getElementById('recordsList');
+
+  if (!monthRecs.length) {
+    container.innerHTML = `<div class="empty-state"><div class="ei">📋</div>Nenhum registro em ${label}.</div>`;
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  monthRecs.forEach(r => { if (!byDate[r.date]) byDate[r.date] = []; byDate[r.date].push(r); });
+  const dates = Object.keys(byDate).sort().reverse();
+
+  container.innerHTML = '';
+  dates.forEach(date => {
+    byDate[date].forEach(r => {
+      const d = new Date(date + 'T12:00:00');
+      const dow = d.getDay();
+      const label = `${DIAS_ABREV[dow]}, ${d.getDate()} ${MESES[d.getMonth()].substring(0,3)}`;
+      const card = document.createElement('div');
+      card.className = 'record-card';
+      const isSab = dow === 6;
+      card.innerHTML = `
+        <div class="record-type-dot ${r.type === 'entrada' ? 'dot-entrada' : 'dot-saida'}"></div>
+        <div class="record-info">
+          <div class="record-date">${label} ${isSab ? '<span class="chip sab">Sáb</span>' : ''}</div>
+          <div class="record-sub">${r.type === 'entrada' ? 'Entrada' : 'Saída'}</div>
+        </div>
+        <div class="record-time">${r.time}</div>
+        <div class="record-badge ${r.nfc ? 'nfc' : 'manual'}">${r.nfc ? '📡 NFC' : '🤚 Manual'}</div>
+      `;
+      container.appendChild(card);
+    });
+  });
+}
+
+// ── REPORT ────────────────────────────────────────────────────────────────────
+let repMonth = new Date().getMonth();
+let repYear  = new Date().getFullYear();
+
+function changeRepMonth(d) {
+  repMonth += d;
+  if (repMonth > 11) { repMonth = 0; repYear++; }
+  if (repMonth < 0)  { repMonth = 11; repYear--; }
+  renderReport();
+}
+
+function renderReport() {
+  const label = `${MESES[repMonth]} ${repYear}`;
+  document.getElementById('repMonthLabel').textContent = label;
+
+  const year = repYear, month = repMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const prefix = `${year}-${pad(month+1)}`;
+
+  // Build day-by-day data
+  let totalExpected = 0, totalWorked = 0, totalExtra = 0, totalShort = 0;
+  let diasTrabalhados = 0, diasFalta = 0;
+  const dailyData = [];
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${pad(month+1)}-${pad(day)}`;
+    const d = new Date(dateStr + 'T12:00:00');
+    const dow = d.getDay();
+    const isToday = dateStr === todayStr();
+    const isFuture = new Date(dateStr + 'T23:59:00') > new Date() && !isToday;
+
+    const exp = expectedMinutes(dateStr);
+    const dayRecs = records.filter(r => r.date === dateStr);
+    const entrada = dayRecs.find(r => r.type === 'entrada');
+    const saida   = dayRecs.find(r => r.type === 'saida');
+
+    let worked = null, diff = null;
+    if (entrada && saida) {
+      const raw = timeDiffMin(entrada.time, saida.time);
+      worked = dow !== 6 ? Math.max(0, raw - ALMOCO) : raw;
+      diff = worked - exp;
+      totalWorked += worked;
+      if (exp > 0) totalExpected += exp;
+      if (diff > 0) totalExtra += diff;
+      if (diff < 0) totalShort += Math.abs(diff);
+      if (exp > 0) diasTrabalhados++;
+    } else if (exp > 0 && !isFuture && !isToday) {
+      diasFalta++;
+      totalExpected += exp;
+      totalShort += exp;
+    } else if (exp > 0) {
+      totalExpected += exp;
+    }
+
+    dailyData.push({ dateStr, d, dow, exp, entrada, saida, worked, diff, isFuture, isToday });
+  }
+
+  // Summary cards
+  const saldoTotal = totalWorked - totalExpected;
+  document.getElementById('reportSummary').innerHTML = `
+    <div class="report-card full">
+      <div class="big ${saldoTotal >= 0 ? 'extra' : 'neg'}">${formatMins(Math.abs(saldoTotal))}</div>
+      <div class="small">Saldo do mês ${saldoTotal >= 0 ? '(crédito)' : '(débito)'}</div>
+    </div>
+    <div class="report-card">
+      <div class="big">${formatMins(totalWorked)}</div>
+      <div class="small">Horas trabalhadas</div>
+    </div>
+    <div class="report-card">
+      <div class="big">${formatMins(totalExpected)}</div>
+      <div class="small">Horas esperadas</div>
+    </div>
+    <div class="report-card">
+      <div class="big extra">${formatMins(totalExtra)}</div>
+      <div class="small">Horas extras</div>
+    </div>
+    <div class="report-card">
+      <div class="big neg">${formatMins(totalShort)}</div>
+      <div class="small">Horas faltantes</div>
+    </div>
+  `;
+
+  // Daily breakdown
+  const container = document.getElementById('reportDaily');
+  container.innerHTML = '';
+
+  dailyData.reverse().forEach(({ dateStr, d, dow, exp, entrada, saida, worked, diff, isFuture }) => {
+    const row = document.createElement('div');
+    row.className = 'daily-row';
+
+    let hoursLabel = '', hoursClass = 'absent', barPct = 0;
+    if (exp === 0) {
+      // folga
+      row.innerHTML = `
+        <div class="day-label" style="color:var(--gray)">${DIAS_ABREV[dow]}</div>
+        <div class="day-num">${d.getDate()}</div>
+        <div class="times" style="flex:1;">Folga</div>
+        <span class="chip fol">Folga</span>
+      `;
+      container.appendChild(row);
+      return;
+    }
+    if (isFuture) {
+      row.innerHTML = `
+        <div class="day-label">${DIAS_ABREV[dow]}</div>
+        <div class="day-num">${d.getDate()}</div>
+        <div class="times" style="flex:1;color:var(--gray);">—</div>
+        <div class="hours absent">—</div>
+      `;
+      container.appendChild(row);
+      return;
+    }
+
+    let timesText = '';
+    if (entrada && saida) {
+      timesText = `${entrada.time} → ${saida.time}`;
+      barPct = Math.min(100, (worked / exp) * 100);
+      if (diff > 0) { hoursLabel = `+${formatMins(diff)}`; hoursClass = 'extra'; }
+      else if (diff < 0) { hoursLabel = formatMins(diff); hoursClass = 'short'; }
+      else { hoursLabel = formatMins(worked); hoursClass = 'normal'; }
+    } else if (entrada) {
+      timesText = `${entrada.time} → em andamento`;
+      hoursLabel = 'Parcial'; hoursClass = 'absent';
+    } else {
+      timesText = 'Sem registro';
+      hoursLabel = `−${formatMins(exp)}`; hoursClass = 'short';
+    }
+
+    const isSab = dow === 6;
+    row.innerHTML = `
+      <div class="day-label">${DIAS_ABREV[dow]}</div>
+      <div class="day-num">${d.getDate()}</div>
+      <div class="times">
+        ${timesText}<br>
+        ${worked !== null ? `<span style="color:var(--dark);font-weight:500;">${formatMins(worked)}</span> trabalhadas` : ''}
+        ${isSab ? ' <span class="chip sab">Sáb</span>' : ''}
+      </div>
+      <div>
+        <div class="hours ${hoursClass}">${hoursLabel}</div>
+        ${barPct > 0 ? `<div class="bar-wrap"><div class="bar-fill" style="width:${barPct}%;background:${hoursClass==='extra'?'var(--warm)':hoursClass==='short'?'var(--red)':'var(--green)'};"></div></div>` : ''}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  // Store for export
+  window._reportData = { label, totalWorked, totalExpected, totalExtra, totalShort, saldoTotal, diasTrabalhados, diasFalta, dailyData };
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportReport() {
+  const d = window._reportData;
+  if (!d) return;
+  let txt = `RELATÓRIO DE PONTO — ${d.label.toUpperCase()}\n`;
+  txt += '='.repeat(45) + '\n';
+  const nome = getEmployeeName();
+  if (nome) txt += `Funcionária: ${nome}\n`;
+  txt += '\n';
+  txt += `Horas trabalhadas:  ${formatMins(d.totalWorked)}\n`;
+  txt += `Horas esperadas:    ${formatMins(d.totalExpected)}\n`;
+  txt += `Horas extras:       ${formatMins(d.totalExtra)}\n`;
+  txt += `Horas faltantes:    ${formatMins(d.totalShort)}\n`;
+  txt += `Saldo:              ${d.saldoTotal >= 0 ? '+' : ''}${formatMins(d.saldoTotal)}\n`;
+  txt += '\n' + '-'.repeat(45) + '\n\n';
+  txt += 'DETALHAMENTO DIÁRIO\n\n';
+  [...d.dailyData].reverse().forEach(({ dateStr, d: date, dow, exp, entrada, saida, worked, diff }) => {
+    const dl = `${DIAS_ABREV[dow]} ${date.getDate()}/${pad(date.getMonth()+1)}`;
+    if (exp === 0) { txt += `${dl}  — Folga\n`; return; }
+    if (!entrada) { txt += `${dl}  — Sem registro\n`; return; }
+    if (entrada && !saida) { txt += `${dl}  Entrada: ${entrada.time}  (em andamento)\n`; return; }
+    const saldo = diff >= 0 ? `+${formatMins(diff)}` : formatMins(diff);
+    const via   = (entrada.nfc || saida.nfc) ? '[NFC]' : '[Manual]';
+    txt += `${dl}  ${entrada.time}→${saida.time}  ${formatMins(worked)} trabalhadas  Saldo: ${saldo}  ${via}\n`;
+  });
+  txt += '\n' + '='.repeat(45) + '\n';
+  txt += 'Almoço (seg-sex): 1h descontada automaticamente\n';
+  txt += `Gerado em: ${new Date().toLocaleString('pt-BR')}\n`;
+
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ponto_${MESES[repMonth]}_${repYear}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📄 Relatório exportado!');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(date, time, type, src) {
+  document.getElementById('modalImg').src = src;
+  const d = new Date(date + 'T12:00:00');
+  document.getElementById('modalInfo').textContent =
+    `${type === 'entrada' ? 'Entrada' : 'Saída'} — ${DIAS_ABREV[d.getDay()]}, ${d.getDate()}/${pad(d.getMonth()+1)}/${d.getFullYear()} às ${time}`;
+  document.getElementById('imgModal').classList.add('open');
+}
+function closeModal() { document.getElementById('imgModal').classList.remove('open'); }
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+const PIN_KEY = 'ponto_pin_v1';
+let pinBuffer = '';
+
+function getStoredPin() { return localStorage.getItem(PIN_KEY) || ''; }
+
+function openPinModal() {
+  const stored = getStoredPin();
+  if (!stored) {
+    // No PIN set — go straight in and prompt setup
+    reportUnlocked = true;
+    _activateTab('relatorio');
+    showToast('⚙️ Defina um PIN em Configurações para proteger o relatório');
+    return;
+  }
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pinErrMsg').textContent = '';
+  document.getElementById('pinOverlay').classList.add('open');
+}
+
+function closePinModal() {
+  document.getElementById('pinOverlay').classList.remove('open');
+  pinBuffer = '';
+  updatePinDots();
+}
+
+function pinKey(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(checkPin, 120);
+  }
+}
+
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pinErrMsg').textContent = '';
+}
+
+function updatePinDots(state) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.className = 'pin-dot';
+    if (state === 'error') dot.classList.add('error');
+    else if (i < pinBuffer.length) dot.classList.add('filled');
+  }
+}
+
+function checkPin() {
+  if (pinBuffer === getStoredPin()) {
+    reportUnlocked = true;
+    closePinModal();
+    _activateTab('relatorio');
+    // Auto-lock after 5 minutes of inactivity
+    clearTimeout(window._pinLockTimer);
+    window._pinLockTimer = setTimeout(() => { reportUnlocked = false; }, 5 * 60 * 1000);
+  } else {
+    updatePinDots('error');
+    document.getElementById('pinErrMsg').textContent = 'PIN incorreto. Tente novamente.';
+    setTimeout(() => {
+      pinBuffer = '';
+      updatePinDots();
+    }, 700);
+  }
+}
+
+function savePin() {
+  const val = document.getElementById('pinSetInput').value.trim();
+  if (!/^\d{4}$/.test(val)) {
+    document.getElementById('pinStatus').textContent = '⚠️ Digite exatamente 4 dígitos numéricos.';
+    document.getElementById('pinStatus').style.color = 'var(--red)';
+    return;
+  }
+  localStorage.setItem(PIN_KEY, val);
+  document.getElementById('pinSetInput').value = '';
+  document.getElementById('pinStatus').textContent = '✓ PIN salvo com sucesso!';
+  document.getElementById('pinStatus').style.color = 'var(--green)';
+  setTimeout(() => { document.getElementById('pinStatus').textContent = ''; }, 3000);
+}
+
+function initSettingsPage() {
+  document.getElementById('nameSetInput').value = getEmployeeName();
+  document.getElementById('pinSetInput').value = '';
+  document.getElementById('pinStatus').textContent = getStoredPin()
+    ? '✓ PIN ativo — digite um novo para alterar'
+    : 'Nenhum PIN definido';
+  document.getElementById('pinStatus').style.color = getStoredPin() ? 'var(--green)' : 'var(--gray)';
+  document.getElementById('nameSetStatus').textContent = '';
+}
+
+function saveNameFromSettings() {
+  const val = document.getElementById('nameSetInput').value.trim();
+  localStorage.setItem(NAME_KEY, val);
+  document.getElementById('employeeName').value = val;
+  document.getElementById('nameSetStatus').textContent = '✓ Nome salvo!';
+  setTimeout(() => { document.getElementById('nameSetStatus').textContent = ''; }, 2500);
+}
+
+// ── EMPLOYEE NAME ─────────────────────────────────────────────────────────────
+const NAME_KEY = 'ponto_employee_name';
+
+function loadName() {
+  const name = localStorage.getItem(NAME_KEY) || '';
+  document.getElementById('employeeName').value = name;
+}
+
+let nameTimer = null;
+function saveName() {
+  const name = document.getElementById('employeeName').value.trim();
+  localStorage.setItem(NAME_KEY, name);
+  const saved = document.getElementById('nameSaved');
+  saved.classList.add('show');
+  clearTimeout(nameTimer);
+  nameTimer = setTimeout(() => saved.classList.remove('show'), 1800);
+}
+
+function getEmployeeName() {
+  return localStorage.getItem(NAME_KEY) || '';
+}
+
+// ── NFC OVERLAY (abertura via URL com ?nfc=1) ────────────────────────────────
+const OV_DIAS  = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const OV_MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+let ovClockId  = null;
+
+function nfcOvOpen() {
+  document.getElementById('nfcOv').classList.add('show');
+  nfcOvRefresh();
+  ovClockId = setInterval(nfcOvTick, 1000);
+  nfcOvTick();
+}
+
+function nfcOvClose() {
+  document.getElementById('nfcOv').classList.remove('show');
+  if (ovClockId) { clearInterval(ovClockId); ovClockId = null; }
+}
+
+function nfcOvTick() {
+  const n = new Date();
+  const t = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  const d = `${OV_DIAS[n.getDay()]}, ${n.getDate()} de ${OV_MESES[n.getMonth()]} de ${n.getFullYear()}`;
+  ['ovClkA','ovClkB'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=t; });
+  ['ovDtA','ovDtB'].forEach(id   => { const el=document.getElementById(id); if(el) el.textContent=d; });
+  // Atualiza "há X tempo" em tempo real
+  const tr  = todayRecords();
+  const ent = tr.find(r => r.type === 'entrada');
+  const dec = document.getElementById('ovTempoDecor');
+  if (dec && ent) {
+    const [h1,m1] = ent.time.split(':').map(Number);
+    const now     = new Date();
+    const tot     = (now.getHours()*60+now.getMinutes()) - (h1*60+m1);
+    const hh=Math.floor(tot/60), mm=tot%60;
+    dec.textContent = `Há ${hh}h ${mm}min em serviço`;
+  }
+}
+
+function nfcOvRefresh() {
+  const views = ['nfcVwEntrada','nfcVwSaida','nfcVwResult','nfcVwFim'];
+  views.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+
+  const tr  = todayRecords();
+  const ent = tr.find(r => r.type === 'entrada');
+  const sai = tr.find(r => r.type === 'saida');
+
+  if (ent && sai) {
+    // Jornada completa
+    document.getElementById('ovFimRows').innerHTML  = nfcOvBuildRows(ent.time, sai.time);
+    document.getElementById('nfcVwFim').style.display = 'block';
+  } else if (ent) {
+    // Já tem entrada, mostrar view de saída
+    document.getElementById('ovEntHora').textContent = ent.time;
+    nfcOvTick();
+    document.getElementById('nfcVwSaida').style.display = 'block';
+  } else {
+    // Sem registro
+    document.getElementById('nfcVwEntrada').style.display = 'block';
+  }
+}
+
+function nfcOvBuildRows(entTime, saiTime) {
+  const ds  = todayStr();
+  const dow = new Date(ds+'T12:00:00').getDay();
+  const raw = timeDiffMin(entTime, saiTime);
+  const w   = dow !== 6 ? Math.max(0, raw - ALMOCO) : raw;
+  const hh  = Math.floor(w/60), mm = w%60;
+  const almRow = dow !== 6
+    ? `<div class="nfc-ov-row"><div class="k">Almoço descontado</div><div class="v">1h</div></div>`
+    : '';
+  return `
+    <div class="nfc-ov-row"><div class="k">Entrada</div><div class="v">${entTime}</div></div>
+    <div class="nfc-ov-row"><div class="k">Saída</div><div class="v">${saiTime}</div></div>
+    ${almRow}
+    <div class="nfc-ov-row"><div class="k">Tempo trabalhado</div><div class="v hl">${hh}h ${mm}min</div></div>
+  `;
+}
+
+function nfcReg(type) {
+  const n    = new Date();
+  const time = `${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  records.push({ date:todayStr(), type, time, nfc:true, ts:Date.now() });
+  saveData(records);
+  refreshUI();
+
+  // Esconde todas as views
+  ['nfcVwEntrada','nfcVwSaida','nfcVwResult','nfcVwFim'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+
+  const resEmoji = document.getElementById('ovResEmoji');
+  const resTitle = document.getElementById('ovResTitle');
+  const resRows  = document.getElementById('ovResRows');
+
+  if (type === 'entrada') {
+    resEmoji.textContent = '🟢';
+    resTitle.textContent = `Entrada às ${time}`;
+    const ds   = todayStr().split('-');
+    resRows.innerHTML = `
+      <div class="nfc-ov-row"><div class="k">Horário registrado</div><div class="v hl">${time}</div></div>
+      <div class="nfc-ov-row"><div class="k">Data</div><div class="v">${ds[2]}/${ds[1]}/${ds[0]}</div></div>
+      <div class="nfc-ov-row"><div class="k">Status</div><div class="v" style="color:var(--warm-light)">✅ Salvo com sucesso</div></div>
+    `;
+  } else {
+    const tr  = todayRecords();
+    const ent = tr.find(r => r.type === 'entrada');
+    resEmoji.textContent = '✅';
+    resTitle.textContent = `Saída às ${time}`;
+    resRows.innerHTML    = nfcOvBuildRows(ent ? ent.time : '--:--', time);
+  }
+
+  document.getElementById('nfcVwResult').style.display = 'block';
+  showToast(type === 'entrada' ? `✅ Entrada às ${time}` : `✅ Saída às ${time}`);
+}
+
+function initNFCMode() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('nfc')) nfcOvOpen();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadName();
+refreshUI();
+initNFCMode();
+</script>
+</body>
+</html>
