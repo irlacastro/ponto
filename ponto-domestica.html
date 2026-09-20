@@ -1099,6 +1099,7 @@
 <script>
 // ── DATA ─────────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'ponto_dom_v3';
+const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbwHJrDZraVlkrbvF5BQ5GoTjGBoxF0ymyuxm9Zxu9LDGQAnfE9AdVbUcKeKob2P-p9G/exec';
 
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
@@ -1294,6 +1295,13 @@ function onNFCTag({ serialNumber }) {
   }, 2500);
 }
 
+// ── GOOGLE SHEETS ─────────────────────────────────────────────────────────────
+function sendToSheets(date, type, time, via) {
+  if (!SCRIPT_URL) return;
+  const url = `${SCRIPT_URL}?data=${date}&tipo=${type}&horario=${encodeURIComponent(time)}&via=${via}`;
+  fetch(url, { mode: 'no-cors' }).catch(() => {});
+}
+
 // ── REGISTER ──────────────────────────────────────────────────────────────────
 function register(type, method = 'nfc', serial = null) {
   const n = new Date();
@@ -1309,7 +1317,8 @@ function register(type, method = 'nfc', serial = null) {
   records.push(record);
   saveData(records);
   refreshUI();
-  showToast(type === 'entrada' ? `✅ Entrada registrada às ${time}` : `✅ Saída registrada às ${time}`);
+  sendToSheets(record.date, type, time, method === 'nfc' ? 'NFC' : 'Manual');
+  showToast(type === 'entrada' ? `✅ Entrada registrada às ${time} · ☁️` : `✅ Saída registrada às ${time} · ☁️`);
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -1810,6 +1819,7 @@ function nfcReg(type) {
   records.push({ date:todayStr(), type, time, nfc:true, ts:Date.now() });
   saveData(records);
   refreshUI();
+  sendToSheets(todayStr(), type, time, 'NFC');
 
   // Esconde todas as views
   ['nfcVwEntrada','nfcVwSaida','nfcVwResult','nfcVwFim'].forEach(id => {
